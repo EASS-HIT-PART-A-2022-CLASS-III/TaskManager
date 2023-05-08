@@ -9,8 +9,3 @@ app.include_router(project_rout.router)
 app.include_router(task_rout.router)
 
 Base.metadata.create_all(bind=engine)
-
-
-
-
-
