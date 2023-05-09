@@ -4,7 +4,7 @@ from schemas.task_schema import TaskCreate, TaskShow, TaskUpdate
 from models import User
 from sqlalchemy.orm import Session
 from database import get_db
-import core.crud as crud
+from core import crud
 from core.dependencies import get_current_user_manager, get_current_user_member
 
 

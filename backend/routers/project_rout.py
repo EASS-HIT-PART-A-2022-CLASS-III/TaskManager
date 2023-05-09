@@ -5,7 +5,7 @@ from models import User
 from sqlalchemy.orm import Session
 from database import get_db
 from core.dependencies import get_current_user_manager, get_current_user
-import core.crud as crud
+from core import crud
 
 router = APIRouter(tags=["project"], prefix="/project")
 
@@ -57,7 +57,7 @@ def project_add_manager(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="user already manager in project",
         )
-    return crud.add_user_to_project(db, user_to_add, project_id)
+    return crud.add_manager_to_project(db, user_to_add, project_id)
 
 
 @router.delete("/{project_id}/delete/user", response_model=ProjectShow)

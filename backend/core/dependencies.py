@@ -8,7 +8,7 @@ from jose import JWTError, jwt
 from schemas.token_schema import TokenData
 from models import User
 from database import get_db
-import core.crud as crud
+from core import crud
 from core.config import ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY, ALGORITHM
 
 

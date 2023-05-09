@@ -3,7 +3,7 @@ from models import User, Project, project_managers, project_users, Task
 from schemas.user_schema import UserCreate, UserShow
 from schemas.project_schema import ProjectCreate
 from schemas.task_schema import TaskCreate, TaskUpdate
-import core.hashing as hashing
+import hashing
 
 
 # read
@@ -29,7 +29,7 @@ def get_project_task(db: Session, project_id: int, task_id: int) -> Task:
 
 def is_project_owner(db: Session, user_id: int, project_id: int) -> bool:
     return (
-        db.query(Project).filter_by(creator_id=user_id, project_id=project_id).first()
+        db.query(Project).filter_by(creator_id=user_id, id=project_id).first()
         is not None
     )
 

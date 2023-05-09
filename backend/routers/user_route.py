@@ -4,8 +4,7 @@ from schemas.user_schema import UserCreate, UserShow
 from typing import Annotated
 from sqlalchemy.orm import Session
 from database import get_db
-import core.dependencies as dependencies
-import core.crud as crud
+from core import crud, dependencies
 
 router = APIRouter(tags=["user"], prefix="/user")
 
