@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from schemas.user_schema import UserCreate, UserShow
+from schemas.token_schema import Token
 from typing import Annotated
 from sqlalchemy.orm import Session
 from database import get_db
@@ -25,7 +26,7 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
         return new_user
 
 
-@router.post("/login/")
+@router.post("/login/", response_model=Token)
 def user_login(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     db: Session = Depends(get_db),
@@ -35,6 +36,7 @@ def user_login(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
         )
     access_token = dependencies.create_access_token(data={"sub": user.username})
     return {"access_token": access_token, "token_type": "bearer"}

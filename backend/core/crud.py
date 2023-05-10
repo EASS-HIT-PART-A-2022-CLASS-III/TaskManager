@@ -3,7 +3,7 @@ from models import User, Project, project_managers, project_users, Task
 from schemas.user_schema import UserCreate, UserShow
 from schemas.project_schema import ProjectCreate
 from schemas.task_schema import TaskCreate, TaskUpdate
-import hashing
+from core import hashing
 
 
 # read
@@ -135,4 +135,4 @@ def remove_user_from_project(db: Session, user_to_remove: User, project_id: int)
 def remove_task_from_project(db: Session, Task_to_remove: Task, project_id: int):
     db.delete(Task_to_remove)
     db.commit()
-    return {}
+    return {"message": "Task removed from project successfully."}

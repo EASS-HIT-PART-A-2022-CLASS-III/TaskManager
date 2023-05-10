@@ -12,6 +12,7 @@ class ProjectCreate(ProjectBase):
 
 
 class ProjectShow(ProjectBase):
+    id: int
     creator_id: int
     users: list[UserShow] = []
     managers: list[UserShow] = []
