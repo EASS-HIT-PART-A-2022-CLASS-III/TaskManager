@@ -4,7 +4,11 @@ from schemas.project_schema import ProjectCreate, ProjectShow
 from models import User
 from sqlalchemy.orm import Session
 from database import get_db
-from core.dependencies import get_current_user_manager, get_current_user
+from core.dependencies import (
+    get_current_user_manager,
+    get_current_user,
+    get_current_user_member,
+)
 from core import crud
 
 router = APIRouter(tags=["project"], prefix="/project")
@@ -85,3 +89,12 @@ def user_projects(
     curr_user: User = Depends(get_current_user), db: Session = Depends(get_db)
 ):
     return curr_user.my_projects
+
+
+@router.get("/{project_id}/", response_model=ProjectShow)
+def user_project(
+    project_id: int,
+    curr_user: User = Depends(get_current_user_member),
+    db: Session = Depends(get_db),
+):
+    return crud.get_project_by_id(db, project_id)

@@ -77,7 +77,7 @@ def get_current_user_manager(
     return current_user
 
 
-def get_current_user_manager(
+def get_current_user_owner(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
     project_id: int = ...,

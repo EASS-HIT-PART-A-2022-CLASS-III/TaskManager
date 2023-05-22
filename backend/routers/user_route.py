@@ -6,6 +6,7 @@ from typing import Annotated
 from sqlalchemy.orm import Session
 from database import get_db
 from core import crud, dependencies
+from models import User
 
 router = APIRouter(tags=["user"], prefix="/user")
 
@@ -40,3 +41,8 @@ def user_login(
         )
     access_token = dependencies.create_access_token(data={"sub": user.username})
     return {"access_token": access_token, "token_type": "bearer"}
+
+
+@router.get("/me/", response_model=UserShow)
+def user_details(curr_user: User = Depends(dependencies.get_current_user)):
+    return curr_user
