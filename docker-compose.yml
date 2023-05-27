@@ -4,6 +4,15 @@ services:
     build: ./backend
     ports:
       - "8000:8000"
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=db
+      - DB_TEST_NAME=test_db
+    depends_on:
+      - db
   frontend:
     build: ./frontend
     ports:
@@ -12,3 +21,9 @@ services:
       - backend
     environment:
       - BACKEND_URL=backend:8000
+  db:
+    image: postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=db

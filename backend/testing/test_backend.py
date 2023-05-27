@@ -5,28 +5,17 @@ from sqlalchemy.orm import sessionmaker
 from database import Base, get_db
 from main import app
 from datetime import datetime
+from core.config import SQLALCHEMY_TEST_DATABASE_URL
 
-
-SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
 
 engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+    SQLALCHEMY_TEST_DATABASE_URL
 )
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
 Base.metadata.drop_all(bind=engine)
 Base.metadata.create_all(bind=engine)
-
-
-@event.listens_for(engine, "connect")
-def do_connect(dbapi_connection, connection_record):
-    dbapi_connection.isolation_level = None
-
-
-@event.listens_for(engine, "begin")
-def do_begin(conn):
-    conn.exec_driver_sql("BEGIN")
 
 
 @pytest.fixture()
@@ -66,7 +55,7 @@ task_data = {
     "title": "Test Task",
     "description": "This is a test task",
     "status": "IN_PROGRESS",
-    "deadline": "2023-05-10T17:34:21.778Z",
+    "deadline": "2023-05-10T17:35",
 }
 
 
@@ -161,9 +150,7 @@ def test_create_task(client):
     assert task_response.status_code == 200
     assert task_response.json()["title"] == task_data["title"]
     assert task_response.json()["description"] == task_data["description"]
-    assert datetime.strptime(
-        task_response.json()["deadline"], "%Y-%m-%dT%H:%M:%S.%f"
-    ) == datetime.strptime(task_data["deadline"], "%Y-%m-%dT%H:%M:%S.%fZ")
+    assert datetime.fromisoformat(task_response.json()["deadline"]).strftime("%d-%m-%Y %H:%M") == datetime.fromisoformat(task_data["deadline"]).strftime("%d-%m-%Y %H:%M")
     assert task_response.json()["status"] == task_data["status"]
     assert task_response.json()["project_id"] == project_response.json()["id"]
     assert task_response.json()["created_by_id"] == user_response.json()["id"]
