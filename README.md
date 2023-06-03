@@ -28,4 +28,15 @@ A project management web app built with FastAPI and Streamlit, allowing users to
     Now, you can go to your web browser and type in http://localhost:8501 to access the application. 
     The API documentation is available at http://localhost:8000/docs.
 
-
+### Run Tests
+1. **Check if the Docker containers are running:**
+    - Open your terminal or command prompt and enter the following command to check the status of the Docker containers:
+    ```bash
+    docker ps
+    ```
+    - This will display a list of running containers. Make sure that the TaskManager containers are up and running.
+2. **Run the script**
+    - In the TaskManager directory, there should be a script named run_tests.sh. Execute this script using the following command:
+    ```bash
+    ./run_tests.sh
+    ```
