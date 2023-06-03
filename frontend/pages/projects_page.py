@@ -3,6 +3,7 @@ import httpx
 from sidebar import authenticated, not_authenticated
 from dateutil.parser import parse
 from streamlit_extras.switch_page_button import switch_page
+import time
 import os
 
 BACKEND_URL = os.getenv("BACKEND_URL")
@@ -17,13 +18,22 @@ def set_specific_project(id) -> None:
     st.session_state.selected_project = id
 
 
+def delete_project(project_id) -> None:
+    response = httpx.delete(
+        url=f"http://{BACKEND_URL}/project/{project_id}/",
+        headers={"Authorization": f"Bearer {st.session_state.token}"},
+    )
+    if response.status_code != 200:
+        st.error(response.json()["detail"])
+
+
 def remove_task(project_id, task_id) -> None:
     response = httpx.delete(
         url=f"http://{BACKEND_URL}/project/{project_id}/task/{task_id}",
         headers={"Authorization": f"Bearer {st.session_state.token}"},
     )
     if response.status_code != 200:
-        st.error(response.text)
+        st.error(response.json()["detail"])
 
 
 def remove_user(project_id, email) -> None:
@@ -32,7 +42,7 @@ def remove_user(project_id, email) -> None:
         headers={"Authorization": f"Bearer {st.session_state.token}"},
     )
     if response.status_code != 200:
-        st.error(response.text)
+        st.error(response.json()["detail"])
 
 
 def add_user(porject_id, email) -> None:
@@ -41,7 +51,7 @@ def add_user(porject_id, email) -> None:
         headers={"Authorization": f"Bearer {st.session_state.token}"},
     )
     if response.status_code != 200:
-        st.error(response.text)
+        st.error(response.json()["detail"])
 
 
 def add_manager(porject_id, email) -> None:
@@ -50,7 +60,7 @@ def add_manager(porject_id, email) -> None:
         headers={"Authorization": f"Bearer {st.session_state.token}"},
     )
     if response.status_code != 200:
-        st.error(response.text)
+        st.error(response.json()["detail"])
 
 
 def is_manager(user_id, project) -> bool:
@@ -101,6 +111,8 @@ def manager_util_form() -> None:
                             remove_user(st.session_state.selected_project, user_email)
                 else:
                     st.error("fill the blank")
+                time.sleep(0.5)
+                st.experimental_rerun()
 
 
 def display_users(users, managers) -> None:
@@ -125,14 +137,18 @@ def display_users(users, managers) -> None:
 
 
 def display_task(task, users, curr_tab) -> None:
-    cols = curr_tab.columns((1, 2, 1, 1, 1, 1, 1))
+    cols = (
+        curr_tab.columns((1, 2, 1, 1, 1, 1, 1))
+        if not st.session_state.is_manager
+        else curr_tab.columns((2, 4, 2, 2, 2, 2, 1, 1))
+    )
     with curr_tab:
         cols[0].write(task["title"])
         cols[1].write(task["description"])
         cols[2].write(parse(task["date_of_creation"]).strftime("%d-%m-%Y %H:%M"))
         cols[3].write(parse(task["deadline"]).strftime("%d-%m-%Y %H:%M"))
-        if users[task["created_by_id"]] == None:
-            cols[4].write("deleted user")
+        if task["created_by_id"] not in users:
+            cols[4].write("removed user")
         else:
             cols[4].write(users[task["created_by_id"]]["username"])
         if task["assignee_id"] == None:
@@ -147,7 +163,7 @@ def display_task(task, users, curr_tab) -> None:
             st.session_state.task_mode = "update"
             switch_page("task_page")
         if st.session_state.is_manager:
-            cols[6].button(
+            cols[7].button(
                 "delete task",
                 key=f"task_delete_{task_id}",
                 on_click=remove_task,
@@ -161,15 +177,26 @@ def display_projects(projects):
     for col, field in zip(cols, fields):
         col.subheader(field)
     for project in projects:
-        col1, col2, col3 = st.columns((1, 2, 1))
-        col1.write(project["title"])
-        col2.write(project["description"])
-        col3.button(
+        is_porject_owner = project["creator_id"] == st.session_state.id
+        cols = (
+            st.columns((1, 2, 1)) if not is_porject_owner else st.columns((2, 4, 1, 1))
+        )
+        cols[0].write(project["title"])
+        cols[1].write(project["description"])
+
+        cols[2].button(
             "enter project page",
-            key=project["id"],
+            key="enter_project {0}".format(project["id"]),
             on_click=set_specific_project,
             args=(project["id"],),
         )
+        if is_porject_owner:
+            cols[3].button(
+                "delete project",
+                key="delete_project {0}".format(project["id"]),
+                on_click=delete_project,
+                args=(project["id"],),
+            )
 
 
 if "token" not in st.session_state:
@@ -192,7 +219,7 @@ elif st.session_state.selected_project == 0:
     if response.status_code == 200:
         display_projects(response.json())
     else:
-        st.error(response.text)
+        st.error(response.json()["detail"])
 
 else:
     authenticated()
@@ -225,7 +252,6 @@ else:
 
         if st.session_state.is_manager:
             if st.button("create task"):
-                st.session_state.users = users
                 st.session_state.task_mode = "create"
                 switch_page("task_page")
 
@@ -238,7 +264,15 @@ else:
             tabs = st.tabs(["in progress", "completed"])
             for tab in tabs:
                 cols = tab.columns((1, 2, 1, 1, 1, 1, 1))
-                fields = ["title:", "description:", "date of creation:","deadline:","created by:","assigned to:",""]
+                fields = [
+                    "title:",
+                    "description:",
+                    "date of creation:",
+                    "deadline:",
+                    "created by:",
+                    "assigned to:",
+                    "",
+                ]
                 for col, field in zip(cols, fields):
                     col.write(field)
             for task in tasks:
@@ -248,4 +282,4 @@ else:
                     curr_tab = tabs[1]
                 display_task(task, users, curr_tab)
         else:
-            st.error(tasks.text)
+            st.error(tasks.json()["detail"])

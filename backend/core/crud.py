@@ -1,3 +1,4 @@
+from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from models import User, Project, project_managers, project_users, Task
 from schemas.user_schema import UserCreate, UserShow
@@ -101,6 +102,8 @@ def add_user_to_project(db: Session, user_to_add: User, project_id: int):
 
 def add_manager_to_project(db: Session, user_to_add: User, project_id: int):
     project = get_project_by_id(db, project_id)
+    if user_to_add not in project.users:
+        project.users.append(user_to_add)
     project.managers.append(user_to_add)
     db.commit()
     db.refresh(project)
@@ -124,12 +127,37 @@ def update_task(
 # delete
 
 
-def remove_user_from_project(db: Session, user_to_remove: User, project_id: int):
+def remove_user_from_project(
+    db: Session, user_to_remove: User, project_id: int
+) -> Project:
     project = get_project_by_id(db, project_id)
+    if user_to_remove.id == project.creator_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="can't remove project owner",
+        )
+
     project.users.remove(user_to_remove)
+    if user_to_remove in project.managers:
+        project.managers.remove(user_to_remove)
+
+    db.query(Task).filter_by(
+        project_id=project_id, created_by_id=user_to_remove.id
+    ).update({Task.created_by_id: None}, synchronize_session="fetch")
+    db.query(Task).filter_by(
+        project_id=project_id, assignee_id=user_to_remove.id
+    ).update({Task.assignee_id: None}, synchronize_session="fetch")
+
     db.commit()
     db.refresh(project)
     return project
+
+
+def delete_project(db: Session, project_id: int):
+    project = get_project_by_id(db, project_id)
+    db.delete(project)
+    db.commit()
+    return {"message": "Project deleted successfully."}
 
 
 def remove_task_from_project(db: Session, Task_to_remove: Task, project_id: int):

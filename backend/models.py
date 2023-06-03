@@ -54,7 +54,7 @@ class Project(Base):
     managers = relationship(
         "User", secondary=project_managers, back_populates="managed_projects"
     )
-    tasks = relationship("Task", back_populates="project")
+    tasks = relationship("Task", back_populates="project", passive_deletes=True)
 
 
 class TaskStatus(str, PythonEnum):

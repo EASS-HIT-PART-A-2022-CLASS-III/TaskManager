@@ -8,9 +8,7 @@ from datetime import datetime
 from core.config import SQLALCHEMY_TEST_DATABASE_URL
 
 
-engine = create_engine(
-    SQLALCHEMY_TEST_DATABASE_URL
-)
+engine = create_engine(SQLALCHEMY_TEST_DATABASE_URL)
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
@@ -150,7 +148,9 @@ def test_create_task(client):
     assert task_response.status_code == 200
     assert task_response.json()["title"] == task_data["title"]
     assert task_response.json()["description"] == task_data["description"]
-    assert datetime.fromisoformat(task_response.json()["deadline"]).strftime("%d-%m-%Y %H:%M") == datetime.fromisoformat(task_data["deadline"]).strftime("%d-%m-%Y %H:%M")
+    assert datetime.fromisoformat(task_response.json()["deadline"]).strftime(
+        "%d-%m-%Y %H:%M"
+    ) == datetime.fromisoformat(task_data["deadline"]).strftime("%d-%m-%Y %H:%M")
     assert task_response.json()["status"] == task_data["status"]
     assert task_response.json()["project_id"] == project_response.json()["id"]
     assert task_response.json()["created_by_id"] == user_response.json()["id"]

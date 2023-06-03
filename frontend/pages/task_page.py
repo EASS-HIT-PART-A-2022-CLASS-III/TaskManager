@@ -62,12 +62,10 @@ def task_update():
             del st.session_state.task_mode
             st.experimental_rerun()
         else:
-            st.error(response.text)
+            st.error(response.json()["detail"])
 
 
 def task_create():
-    users = st.session_state.users
-
     task_title = st.text_input("Task Title")
     task_description = st.text_area("Task Description")
     task_deadline_date = st.date_input("Task Deadline Date")
@@ -76,7 +74,7 @@ def task_create():
     task_status = st.selectbox(
         "status", options.keys(), format_func=lambda x: options[x]
     )
-    submitted = st.button("Update Task")
+    submitted = st.button("Create Task")
     if submitted:
         if task_title != "" or task_description != "":
             deadline = datetime.combine(task_deadline_date, task_deadline_time)
@@ -93,16 +91,15 @@ def task_create():
             if response.status_code == 200:
                 st.success("task created")
                 time.sleep(0.5)
-                del st.session_state.users
                 del st.session_state.task_mode
                 st.experimental_rerun()
             else:
-                st.error(response.text)
+                st.error(response.json()["detail"])
         else:
             st.error("fill the blank")
 
 
-if "users" not in st.session_state or "task_mode" not in st.session_state:
+if "task_mode" not in st.session_state:
     switch_page("projects_page")
 if "token" not in st.session_state:
     switch_page("main")

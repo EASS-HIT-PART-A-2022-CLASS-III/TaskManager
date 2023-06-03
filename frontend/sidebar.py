@@ -56,7 +56,7 @@ def _register_form() -> None:
                     _login(password_val, email_val)
                     del st.session_state.pressed_register_button
                 else:
-                    st.warning(response.text)
+                    st.warning(response.json()["detail"])
             else:
                 st.sidebar.error("fill the blank")
 

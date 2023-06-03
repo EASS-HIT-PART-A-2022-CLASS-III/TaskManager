@@ -18,7 +18,7 @@ class TaskCreate(BaseModel):
 class TaskShow(TaskCreate):
     id: int
     project_id: int
-    created_by_id: int
+    created_by_id: int | None = None
     assignee_id: int | None = None
     date_of_creation: datetime
 
