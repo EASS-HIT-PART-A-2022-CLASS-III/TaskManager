@@ -8,6 +8,10 @@ A project management web app built with FastAPI and Streamlit, allowing users to
 - Project and task creation, updates, and deletion
 - Team collaboration with role-based access control
 
+<p align="center">
+  <img src="img/TaskManager.png" />
+</p>
+
 ## Getting Started
 
 1. **Clone the Repository:**
