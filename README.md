@@ -43,4 +43,6 @@ A project management web app built with FastAPI and Streamlit, allowing users to
     - In the TaskManager directory, there should be a script named run_tests.sh. Execute this script using the following command:
     ```bash
     ./run_tests.sh
-    ```
+    ```    
+## Video
+[![video](https://img.youtube.com/vi/G9pALyqejDI/0.jpg)](https://youtu.be/G9pALyqejDI)
